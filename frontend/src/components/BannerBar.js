@@ -12,7 +12,7 @@ const BannerBar = () => {
         {/* Brand block */}
         <div className="h-20 flex items-center px-6 border-b border-white/10">
             <div className={`text-left leading-tight ${libreBaskerville.className}`}>
-            <div className="text-2xl font-semibold tracking-wide italic"> Fincrate </div>
+            <div className="text-2xl font-bold tracking-wide italic "> Fincrate </div>
             </div>
         </div>
 

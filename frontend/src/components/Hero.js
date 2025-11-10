@@ -19,12 +19,15 @@ const Hero = () => {
 						</p>
 					</div>
 					{/* Illustration */}
-					<div className="mt-10">
+					<div className="mt-10 flex">
 						<img
 							src="/Hero.png"
 							alt="Finance illustration"
-							className="w-full max-h-[420px] object-contain rounded-xl bg-[var(--brand-50)]"
+							className="w-full max-h-[520px] object-contain rounded-xl bg-[var(--brand-50)]"
 						/>
+            <p className="text-3xl text-[var(--brand-900)] font-bold content-center">
+                Manage your portfolio of stocks, ETFs, and cryptocurrencies with ease using our services.
+            </p>
 					</div>
 				</div>
 			</section>
