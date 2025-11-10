@@ -1,38 +1,22 @@
 const Navbar = () => {
   return (
-    <header className="flex items-center justify-between p-4 bg-gray-800 text-white">
-      {/* Logo */}
-      <div className="flex items-center space-x-2">
-        <img
-          src="/logo.png"
-          alt="Logo"
-          className="w-10 h-10 rounded-full"
-        />
-        <h1 className="text-xl font-semibold"> Fincrate </h1>
+    <header className="w-full bg-[var(--brand-50)] backdrop-blur border-b border-[var(--brand-100)]">
+      <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
+        <nav className="flex items-center gap-8 text-[var(--brand-900)]">
+          <a href="/">Home</a>
+          <a href="#portfolio">Portfolio</a>
+          <a href="#transactions">Transactions</a>
+          <a href="#performance">Performance</a>
+        </nav>
+        <nav className="flex items-center gap-6 text-[var(--brand-900)]">
+          <a href="#account">Account</a>
+          <button aria-label="Menu" className="p-2 rounded">
+            <span className="block w-5 h-0.5 bg-[var(--brand-900)] mb-1"></span>
+            <span className="block w-5 h-0.5 bg-[var(--brand-900)] mb-1"></span>
+            <span className="block w-5 h-0.5 bg-[var(--brand-900)]"></span>
+          </button>
+        </nav>
       </div>
-
-      {/* Navigation Links */}
-      <nav className="space-x-6">
-        <a href="/" className="hover:text-gray-300">
-          Home
-        </a>
-        <a href="/about" className="hover:text-gray-300">
-          About
-        </a>
-        <a href="/contact" className="hover:text-gray-300">
-          Contact
-        </a>
-      </nav>
-
-      {/* Secondary Nav / Actions */}
-      <nav className="space-x-4">
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
-          Login
-        </button>
-        <button className="border border-white px-3 py-1 rounded hover:bg-white hover:text-gray-800">
-          Sign Up
-        </button>
-      </nav>
     </header>
   );
 };
