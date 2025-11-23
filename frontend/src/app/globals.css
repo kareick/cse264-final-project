@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
+/* Root variables */
 :root {
-  /* Light theme inspired by reference image */
-  --background: #eaf3ff; /* soft blue-tinted background */
-  --foreground: #0f172a; /* slate-900 for headings */
+  --background: #ffffff; /* pure white */
+  --foreground: #0f172a; /* slate-900 */
 
-  /* Brand blues (Sky/Blue scale) */
+  /* Brand colors */
   --brand-50: #eff6ff;
   --brand-100: #dbeafe;
   --brand-200: #bfdbfe;
@@ -15,28 +15,44 @@
   --brand-600: #2563eb;
   --brand-700: #1d4ed8;
   --brand-800: #1e40af;
-  --brand-900: #0b3e74; /* deep blue for accents */
-}
+  --brand-900: #0b3e74;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* Tailwind theme bridge */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Optional dark mode — stays subtle */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1220; /* deep blue/indigo */
-    --foreground: #e6eefc;
+    --background: #0b1220;
+    --foreground: #f1f5f9; /* light slate */
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
   }
 }
 
+/* GLOBAL BODY RESET */
 body {
-  /* Soft blue gradient background similar to the reference */
-  background:
-    linear-gradient(180deg, rgba(79,155,214,0.45) 0%, rgba(44,110,160,0.40) 100%),
-    var(--background);
+  background: #ffffff !important; /* pure white */
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Optional: smooth rendering */
+html {
+  scroll-behavior: smooth;
 }

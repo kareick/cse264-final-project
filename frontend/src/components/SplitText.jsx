@@ -1,3 +1,34 @@
+"use client";
+
+"use client";
+
+"use client";
+
+ "use client";
+
+"use client";
+
+"use client";
+
+ "use client";
+
+ "use client";
+
+"use client";
+
+"use client";
+
+"use client";
+
+/* eslint-disable react/prop-types */
+"use client";
+
+"use client";
+
+"use client";
+
+"use client";
+
 import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
