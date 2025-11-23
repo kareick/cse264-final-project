@@ -1,12 +1,21 @@
-import BannerBar from "../components/BannerBar";
-import Hero from "../components/Hero";
+import ColorBends from '../components/ColorBends.jsx'
 
 
 const Landing = () => {
 	return (
 		<div>
-			<BannerBar></BannerBar>
-			<Hero className="bg-[var(--brand-50)]"></Hero>
+      <ColorBends
+        colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
+        rotation={30}
+        speed={0.3}
+        scale={1.2}
+        frequency={1.4}
+        warpStrength={1.2}
+        mouseInfluence={0.8}
+        parallax={0.6}
+        noise={0.08}
+        transparent
+      />
 		</div>
 	);
 };
