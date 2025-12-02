@@ -11,12 +11,15 @@ import { NavBar } from "@/components/ui/tubelight-navbar";
 import { Home, User, Briefcase, FileText } from "lucide-react";
 
 export default function SignUp() {
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [error, setError] = React.useState("");
-  const [success, setSuccess] = React.useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
   const navItems = [
     { name: "Home", url: "/", icon: Home },
@@ -41,7 +44,7 @@ export default function SignUp() {
     setSuccess("");
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/register", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         credentials: "include", // allow httpOnly cookie
         headers: {
@@ -58,13 +61,14 @@ export default function SignUp() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Registration failed");
+        console.error('Registration failed:', data);
+        setError(data.error || `Registration failed (${res.status})`);
         return;
       }
 
       setSuccess("Account created! Redirecting...");
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        window.location.href = "/portfolio";
       }, 800);
     } catch (err) {
       console.error("Sign-up error:", err);

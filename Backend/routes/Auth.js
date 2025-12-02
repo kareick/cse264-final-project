@@ -8,7 +8,58 @@ const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    // Check if JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('ERROR: JWT_SECRET is not set in environment variables!');
+      return res.status(500).json({ 
+        error: 'Server configuration error. Please contact support.' 
+      });
+    }
+
+    // Log received data for debugging
+    console.log('Registration request received:', {
+      body: req.body,
+      hasEmail: !!req.body.email,
+      hasPassword: !!req.body.password,
+      hasFirstName: !!req.body.firstName,
+      hasLastName: !!req.body.lastName
+    });
+
+    let { email, password, firstName, lastName } = req.body;
+
+    // Trim whitespace
+    email = email?.trim();
+    password = password?.trim();
+    firstName = firstName?.trim();
+    lastName = lastName?.trim();
+
+    // Validate required fields
+    if (!email || !password || !firstName || !lastName) {
+      const missing = [];
+      if (!email) missing.push('email');
+      if (!password) missing.push('password');
+      if (!firstName) missing.push('firstName');
+      if (!lastName) missing.push('lastName');
+      
+      return res.status(400).json({ 
+        error: `Missing required fields: ${missing.join(', ')}` 
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        error: 'Invalid email format' 
+      });
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        error: 'Password must be at least 6 characters long' 
+      });
+    }
 
     const displayName = `${firstName} ${lastName}`.trim();
 
@@ -43,7 +94,7 @@ router.post('/register', async (req, res) => {
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000
     });
 
@@ -58,13 +109,31 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    // Check for database connection errors
+    if (error.code === 'ENOTFOUND') {
+      return res.status(503).json({ 
+        error: 'Database connection failed. Please check your database configuration and ensure your Supabase project is active.' 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: error.message || 'Internal server error' 
+    });
   }
 });
 
 // Login
 router.post('/login', async (req, res) => {
   try {
+    // Check if JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('ERROR: JWT_SECRET is not set in environment variables!');
+      return res.status(500).json({ 
+        error: 'Server configuration error. Please contact support.' 
+      });
+    }
+
     const { email, password } = req.body;
 
     // Look up user
@@ -93,7 +162,7 @@ router.post('/login', async (req, res) => {
     res.cookie('authToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax', 
       maxAge: 24 * 60 * 60 * 1000
     });
 
@@ -108,7 +177,17 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    
+    // Check for database connection errors
+    if (error.code === 'ENOTFOUND') {
+      return res.status(503).json({ 
+        error: 'Database connection failed. Please check your database configuration and ensure your Supabase project is active.' 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: error.message || 'Internal server error' 
+    });
   }
 });
 
