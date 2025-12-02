@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import sql from './db.js';
 
-import authRoutes from './routes/Auth.js';
+import authRoutes from './routes/auth.js';
 import portfolioRoutes from './routes/portfolio.js';
 import investmentRoutes from './routes/investments.js';
 import assetRoutes from './routes/assets.js';
@@ -11,7 +11,7 @@ import assetRoutes from './routes/assets.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
@@ -19,7 +19,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolios', portfolioRoutes);
-app.use('/api/investment', investmentRoutes);
+app.use('/api/investments', investmentRoutes);
 app.use('/api/assets', assetRoutes);
 
 // Health check
