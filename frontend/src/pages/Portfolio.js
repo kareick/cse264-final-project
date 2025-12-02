@@ -38,6 +38,8 @@ const defaultHoldings = [
 ];
 
 const Portfolio = () => {
+  const [portfolios, setPortfolios] = useState([]);
+  const [selectedPortfolio, setSelectedPortfolio] = useState(null);
   const [draftHoldings, setDraftHoldings] = useState(defaultHoldings);
   const [holdings, setHoldings] = useState(defaultHoldings);
   const [portfolioData, setPortfolioData] = useState(null);
@@ -45,22 +47,94 @@ const Portfolio = () => {
   const [error, setError] = useState("");
 
   const navItems = [
-    { name: "Home", url: "/", icon: Home },
-    { name: "About", url: "#", icon: User },
-    { name: "Contact", url: "/contact", icon: Briefcase },
-    { name: "Portfolio", url: "/portfolio", icon: PieChart },
+    { name: "Portfolio", url: "/portfolio", icon: Home },
+    { name: "Invest", url: "/investments", icon: User },
+    { name: "Market", url: "/market", icon: Briefcase },
+    { name: "Log Out", url: "/logout", icon: PieChart },
   ];
 
-  const fetchPortfolioData = async () => {
+  // Fetch user's portfolios
+  const fetchPortfolios = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/portfolios`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        throw new Error("Unable to load portfolios");
+      }
+
+      const data = await response.json();
+      setPortfolios(data);
+      
+      // If user has portfolios, load the first one
+      if (data.length > 0 && !selectedPortfolio) {
+        fetchPortfolioDetails(data[0].id);
+      } else if (data.length === 0) {
+        // No portfolios, use default holdings for market data
+        fetchMarketData(defaultHoldings);
+      }
+    } catch (err) {
+      console.error("Error fetching portfolios:", err);
+      // If auth fails, fall back to default holdings
+      fetchMarketData(defaultHoldings);
+    }
+  };
+
+  // Fetch portfolio details with holdings
+  const fetchPortfolioDetails = async (portfolioId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/portfolios/${portfolioId}`, {
+        method: "GET",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to load portfolio details");
+      }
+
+      const data = await response.json();
+      setSelectedPortfolio(data);
+      
+      // Convert portfolio holdings to format for market data
+      if (data.holdings && data.holdings.length > 0) {
+        const holdingsForMarket = data.holdings.map((holding, index) => ({
+          symbol: holding.symbol,
+          name: holding.name || holding.symbol,
+          shares: parseFloat(holding.quantity) || 0,
+          color: defaultHoldings[index]?.color || `#${Math.floor(Math.random()*16777215).toString(16)}`,
+        }));
+        setHoldings(holdingsForMarket);
+        setDraftHoldings(holdingsForMarket);
+        fetchMarketData(holdingsForMarket);
+      } else {
+        fetchMarketData(defaultHoldings);
+      }
+    } catch (err) {
+      console.error("Error fetching portfolio details:", err);
+      fetchMarketData(defaultHoldings);
+    }
+  };
+
+  // Fetch market data for holdings
+  const fetchMarketData = async (holdingsToFetch) => {
     setLoading(true);
     setError("");
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/market/portfolio`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          holdings: holdings.map(({ symbol, shares }) => ({
+          holdings: holdingsToFetch.map(({ symbol, shares }) => ({
             symbol,
             shares,
           })),
@@ -82,7 +156,14 @@ const Portfolio = () => {
   };
 
   useEffect(() => {
-    fetchPortfolioData();
+    fetchPortfolios();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (holdings.length > 0) {
+      fetchMarketData(holdings);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [holdings]);
 

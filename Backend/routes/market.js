@@ -3,6 +3,43 @@ import assetDataService from '../services/assetData.js';
 
 const router = express.Router();
 
+// Get stock price for a single symbol
+router.get('/quote/:symbol', async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    const priceData = await assetDataService.getStockPrice(symbol.toUpperCase());
+    res.json(priceData);
+  } catch (error) {
+    const msg = error.message;
+    let statusCode = 404;
+    
+    if (msg.includes('not configured')) statusCode = 503;
+    else if (msg.includes('rate limit') || msg.includes('25 requests')) statusCode = 429;
+    else if (msg.includes('HTTP')) statusCode = 502;
+    
+    res.status(statusCode).json({ error: msg });
+  }
+});
+
+// Get stock history for a single symbol
+router.get('/history/:symbol', async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    const { outputsize = 'compact' } = req.query;
+    const history = await assetDataService.getStockHistory(symbol.toUpperCase(), outputsize);
+    res.json({ symbol: symbol.toUpperCase(), history });
+  } catch (error) {
+    const msg = error.message;
+    let statusCode = 404;
+    
+    if (msg.includes('not configured')) statusCode = 503;
+    else if (msg.includes('rate limit') || msg.includes('25 requests')) statusCode = 429;
+    else if (msg.includes('HTTP')) statusCode = 502;
+    
+    res.status(statusCode).json({ error: msg });
+  }
+});
+
 router.post('/portfolio', async (req, res) => {
   try {
     const { holdings = [], outputsize = 'compact' } = req.body || {};
@@ -51,7 +88,10 @@ router.post('/portfolio', async (req, res) => {
     });
 
     if (seriesData.length === 0) {
-      return res.status(502).json({ error: 'Market data unavailable right now. Please try again shortly.' });
+      return res.status(429).json({ 
+        error: 'Market data unavailable. API rate limit reached.',
+        failedSymbols
+      });
     }
 
     const totalsByDate = new Map();
@@ -77,8 +117,7 @@ router.post('/portfolio', async (req, res) => {
       warnings: failedSymbols.length ? { skippedSymbols: failedSymbols } : undefined
     });
   } catch (error) {
-    console.error('Portfolio market data error:', error.message);
-    res.status(502).json({ error: 'Unable to fetch market data at this time' });
+    res.status(502).json({ error: error.message || 'Unable to fetch market data' });
   }
 });
 
