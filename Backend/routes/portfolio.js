@@ -1,6 +1,7 @@
 import express from 'express';
 import sql from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
+import assetDataService from '../services/assetData.js';
 
 const router = express.Router();
 
@@ -51,28 +52,52 @@ router.get('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Portfolio not found' });
     }
     
-    // Get holdings with current prices
+    // Get holdings
     const holdings = await sql`
       SELECT 
         ph.*,
-        a.symbol, a.name, a.type, a.currency,
-        ap.price as current_price,
-        (ap.price * ph.quantity) as current_value,
-        (ph.quantity * ph.average_buy_price) as invested_value,
-        ((ap.price * ph.quantity) - (ph.quantity * ph.average_buy_price)) as gain_loss,
-        (((ap.price * ph.quantity) - (ph.quantity * ph.average_buy_price)) / (ph.quantity * ph.average_buy_price)) * 100 as gain_loss_percent
+        a.symbol, a.name, a.type, a.currency
       FROM portfolio_holdings ph
       JOIN assets a ON ph.asset_id = a.id
-      LEFT JOIN LATERAL (
-        SELECT price FROM asset_prices 
-        WHERE asset_id = a.id 
-        ORDER BY timestamp DESC 
-        LIMIT 1
-      ) ap ON true
       WHERE ph.portfolio_id = ${id}
     `;
     
-    res.json({ ...portfolio, holdings });
+    // Fetch current prices for all holdings from API
+    const holdingsWithPrices = await Promise.all(
+      holdings.map(async (holding) => {
+        try {
+          const priceData = await assetDataService.getAssetPrice(holding.symbol, holding.type);
+          const currentPrice = priceData.price || 0;
+          const currentValue = currentPrice * parseFloat(holding.quantity);
+          const investedValue = parseFloat(holding.quantity) * parseFloat(holding.average_buy_price);
+          const gainLoss = currentValue - investedValue;
+          const gainLossPercent = investedValue > 0 ? (gainLoss / investedValue) * 100 : 0;
+          
+          return {
+            ...holding,
+            current_price: currentPrice,
+            current_value: currentValue,
+            invested_value: investedValue,
+            gain_loss: gainLoss,
+            gain_loss_percent: gainLossPercent
+          };
+        } catch (error) {
+          console.error(`Error fetching price for ${holding.symbol}:`, error.message);
+          // If price fetch fails, use 0 for current price/value
+          const investedValue = parseFloat(holding.quantity) * parseFloat(holding.average_buy_price);
+          return {
+            ...holding,
+            current_price: 0,
+            current_value: 0,
+            invested_value: investedValue,
+            gain_loss: -investedValue,
+            gain_loss_percent: -100
+          };
+        }
+      })
+    );
+    
+    res.json({ ...portfolio, holdings: holdingsWithPrices });
   } catch (error) {
     console.error('Get portfolio error:', error);
     res.status(500).json({ error: 'Internal server error' });

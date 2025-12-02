@@ -88,7 +88,7 @@ class AssetDataService {
     } catch (error) {
       // If API fails (rate limit, etc.), generate mock data for development
       if (error.message.includes('rate limit') || error.message.includes('25 requests')) {
-        console.warn(`⚠️  Alpha Vantage rate limit hit for ${symbol}. Using mock data for development.`);
+        console.warn(`Alpha Vantage rate limit hit for ${symbol}. Using mock data for development.`);
         return this.generateMockHistory(symbol, outputsize);
       }
       throw error;
@@ -97,8 +97,12 @@ class AssetDataService {
 
   generateMockHistory(symbol, outputsize = 'compact') {
     // Generate realistic mock data for development when APIs are rate-limited
+    // Use symbol as seed for consistent prices across reloads
+    const seed = symbol.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seededRandom = (seed + 12345) % 1000 / 1000; // Deterministic "random" based on symbol
+    
     const days = outputsize === 'full' ? 365 : 100;
-    const basePrice = 100 + Math.random() * 200; // Random base price between 100-300
+    const basePrice = 100 + seededRandom * 200; // Consistent base price for this symbol
     const history = [];
     
     const today = new Date();
@@ -108,15 +112,21 @@ class AssetDataService {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       
-      // Random daily change between -3% and +3%
-      const changePercent = (Math.random() - 0.5) * 0.06;
+      // Deterministic daily change based on symbol and day index
+      const daySeed = (seed + i) % 1000 / 1000;
+      const changePercent = (daySeed - 0.5) * 0.06; // Between -3% and +3%
       currentPrice = currentPrice * (1 + changePercent);
       
-      const open = currentPrice * (1 + (Math.random() - 0.5) * 0.02);
+      const openSeed = (seed + i * 2) % 1000 / 1000;
+      const highSeed = (seed + i * 3) % 1000 / 1000;
+      const lowSeed = (seed + i * 4) % 1000 / 1000;
+      const volumeSeed = (seed + i * 5) % 1000 / 1000;
+      
+      const open = currentPrice * (1 + (openSeed - 0.5) * 0.02);
       const close = currentPrice;
-      const high = Math.max(open, close) * (1 + Math.random() * 0.02);
-      const low = Math.min(open, close) * (1 - Math.random() * 0.02);
-      const volume = Math.floor(1000000 + Math.random() * 50000000);
+      const high = Math.max(open, close) * (1 + highSeed * 0.02);
+      const low = Math.min(open, close) * (1 - lowSeed * 0.02);
+      const volume = Math.floor(1000000 + volumeSeed * 50000000);
       
       history.push({
         date: date.toISOString().split('T')[0],

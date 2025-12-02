@@ -105,11 +105,12 @@ const Portfolio = () => {
       
       // Convert portfolio holdings to format for market data
       if (data.holdings && data.holdings.length > 0) {
+        const colorPalette = ["#0f172a", "#1f2937", "#4b5563", "#f97316", "#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
         const holdingsForMarket = data.holdings.map((holding, index) => ({
           symbol: holding.symbol,
           name: holding.name || holding.symbol,
           shares: parseFloat(holding.quantity) || 0,
-          color: defaultHoldings[index]?.color || `#${Math.floor(Math.random()*16777215).toString(16)}`,
+          color: colorPalette[index % colorPalette.length],
         }));
         setHoldings(holdingsForMarket);
         setDraftHoldings(holdingsForMarket);
@@ -233,16 +234,53 @@ const Portfolio = () => {
       <main className="pt-24 pb-16 space-y-12">
         <section className="container mx-auto px-4 md:px-8">
           <div className="rounded-3xl bg-white border border-black/10 shadow-xl p-8 md:p-12">
-            <p className="uppercase text-xs tracking-[0.4em] text-black/60">
-              Insight
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold mt-4">
-              Visualize Your Portfolio in Real Time
-            </h1>
-            <p className="mt-4 text-lg text-black/70 max-w-3xl">
-              Connect live Alpha Vantage market data with your personal share
-              counts to see how every position contributes to your total value.
-            </p>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex-1">
+                <p className="uppercase text-xs tracking-[0.4em] text-black/60">
+                  Insight
+                </p>
+                <h1 className="text-4xl md:text-5xl font-bold mt-4">
+                  Visualize Your Portfolio in Real Time
+                </h1>
+                <p className="mt-4 text-lg text-black/70 max-w-3xl">
+                  Connect live Alpha Vantage market data with your personal share
+                  counts to see how every position contributes to your total value.
+                </p>
+              </div>
+              {portfolios.length > 0 && (
+                <div className="flex flex-col gap-2 min-w-[200px]">
+                  <label className="text-sm font-medium text-black/70">
+                    Select Portfolio
+                  </label>
+                  <select
+                    value={selectedPortfolio?.id || ""}
+                    onChange={(e) => {
+                      const portfolioId = e.target.value;
+                      if (portfolioId) {
+                        fetchPortfolioDetails(portfolioId);
+                      }
+                    }}
+                    className="rounded-xl border border-black/20 bg-white px-4 py-2 text-black focus:border-black focus:outline-none cursor-pointer hover:border-black/40 transition"
+                  >
+                    {portfolios.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name || `Portfolio ${p.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+            {selectedPortfolio && (
+              <div className="mt-6 pt-6 border-t border-black/10">
+                <p className="text-sm text-black/60">
+                  <span className="font-semibold">{selectedPortfolio.name}</span>
+                  {selectedPortfolio.description && (
+                    <span className="ml-2">- {selectedPortfolio.description}</span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         </section>
 
@@ -270,21 +308,59 @@ const Portfolio = () => {
               <Line
                 data={totalLineData}
                 options={{
+                  responsive: true,
+                  maintainAspectRatio: true,
+                  aspectRatio: 2,
+                  interaction: {
+                    mode: 'index',
+                    intersect: false,
+                  },
                   plugins: {
                     legend: {
                       display: false,
                     },
+                    tooltip: {
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      padding: 12,
+                      displayColors: false,
+                      callbacks: {
+                        label: (context) => `$${context.parsed.y.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}`,
+                      },
+                    },
                   },
                   scales: {
                     y: {
+                      beginAtZero: false,
                       ticks: {
                         callback: (value) =>
                           `$${Number(value).toLocaleString()}`,
+                        color: 'rgba(0, 0, 0, 0.6)',
+                        font: {
+                          size: 11,
+                        },
                       },
-                      grid: { color: "rgba(15,23,42,0.1)" },
+                      grid: { 
+                        color: "rgba(15,23,42,0.1)",
+                        drawBorder: false,
+                      },
                     },
                     x: {
-                      grid: { display: false },
+                      ticks: {
+                        maxRotation: 45,
+                        minRotation: 45,
+                        color: 'rgba(0, 0, 0, 0.6)',
+                        font: {
+                          size: 10,
+                        },
+                        maxTicksLimit: 10,
+                      },
+                      grid: { 
+                        display: false,
+                        drawBorder: false,
+                      },
                     },
                   },
                 }}
