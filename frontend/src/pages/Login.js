@@ -10,9 +10,7 @@ import { Chrome, Apple } from "lucide-react";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 import { Home, User, Briefcase, FileText } from "lucide-react";
 
-export default function SignUp() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,7 +23,7 @@ export default function SignUp() {
     { name: "Home", url: "/", icon: Home },
     { name: "About", url: "#", icon: User },
     { name: "Contact", url: "/contact", icon: Briefcase },
-    { name: "Login", url: "/signup", icon: FileText },
+    { name: "Login", url: "/login", icon: FileText },
   ];
 
   const images = [
@@ -36,15 +34,15 @@ export default function SignUp() {
   ];
 
   // ----------------------
-  // SIGN-UP HANDLER
+  // LOGIN HANDLER
   // ----------------------
-  async function handleSignUp(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         credentials: "include", // allow httpOnly cookie
         headers: {
@@ -53,25 +51,23 @@ export default function SignUp() {
         body: JSON.stringify({
           email,
           password,
-          firstName,
-          lastName,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        console.error('Registration failed:', data);
-        setError(data.error || `Registration failed (${res.status})`);
+        console.error('Login failed:', data);
+        setError(data.error || `Login failed (${res.status})`);
         return;
       }
 
-      setSuccess("Account created! Redirecting...");
+      setSuccess("Login successful! Redirecting...");
       setTimeout(() => {
         window.location.href = "/portfolio";
       }, 800);
     } catch (err) {
-      console.error("Sign-up error:", err);
+      console.error("Login error:", err);
       setError("Something went wrong. Try again.");
     }
   }
@@ -111,10 +107,10 @@ export default function SignUp() {
           <ImageSlider images={images} interval={4000} />
         </div>
 
-        {/* Right: Sign-Up Form */}
-        <div className="w-full h-full bg-white text-black flex flex-col items-center justify-center p-8 md:p-12">
+        {/* Right: Login Form */}
+        <div className="w-full h-full bg-white text-black flex flex-col items-center justify-center p-8 md:p-12 relative z-10">
           <motion.div
-            className="w-full max-w-sm"
+            className="w-full max-w-sm relative z-10"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -123,10 +119,10 @@ export default function SignUp() {
               variants={itemVariants}
               className="text-3xl font-bold tracking-tight mb-2 text-black"
             >
-              Create Your Account
+                Login to Your Account
             </motion.h1>
             <motion.p variants={itemVariants} className="text-black/60 mb-8">
-              Join Fincrate and start managing your investments smarter.
+              Welcome back to Fincrate.
             </motion.p>
 
             {/* OAuth Buttons */}
@@ -154,36 +150,12 @@ export default function SignUp() {
               </div>
             </motion.div>
 
-            {/* SIGN UP FORM */}
+            {/* LOGIN FORM */}
             <motion.form
               variants={itemVariants}
-              className="space-y-6"
-              onSubmit={handleSignUp}
+              className="space-y-6 relative z-10"
+              onSubmit={handleLogin}
             >
-              {/* First Name */}
-              <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-black">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  className="border-black/20 text-black bg-white"
-                />
-              </div>
-
-              {/* Last Name */}
-              <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-black">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  className="border-black/20 text-black bg-white"
-                />
-              </div>
-
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-black">Email</Label>
@@ -213,7 +185,7 @@ export default function SignUp() {
 
               {/* Submit */}
               <Button type="submit" className="w-full bg-indigo-600 text-white hover:bg-indigo-700">
-                Create Account
+                Login
               </Button>
             </motion.form>
 
@@ -232,9 +204,9 @@ export default function SignUp() {
 
             {/* Footer */}
             <motion.p variants={itemVariants} className="text-center text-sm text-black/60 mt-8">
-              Already have an account?{" "}
-              <a href="/login" className="font-medium text-indigo-600 hover:underline">
-                Log in
+              Don't have an account?{" "}
+              <a href="/register" className="font-medium text-indigo-600 hover:underline">
+                Sign up
               </a>
             </motion.p>
           </motion.div>
