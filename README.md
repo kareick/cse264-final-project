@@ -4,6 +4,24 @@
 Fincrate is a full-stack web application that enables users to track, analyze, and optimize their investment portfolios.
 It supports stocks, ETFs, and cryptocurrencies, delivering real-time analytics, secure account management, and AI-powered investment recommendations, all within a clean, professional interface inspired by modern fintech platforms.
 
+<h3>Screenshots</h3>
+
+**Landing Page**
+
+![Landing Page](frontend/public/Landing.png)
+
+**Portfolio Dashboard**
+
+![Portfolio Dashboard](frontend/public/Portfolio.png)
+
+**Investment Management**
+
+![Investment Management](frontend/public/Investment.png)
+
+**Market Data**
+
+![Market Data](frontend/public/Market.png)
+
 <h3>Tech Stack</h3>
 
 **Frontend**
