@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Chrome, Apple } from "lucide-react";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 import { Home, User, Briefcase, FileText } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
@@ -17,6 +18,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const { setUser } = useAuth();
 
   const API_BASE_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -66,6 +68,9 @@ export default function SignUp() {
         return;
       }
 
+      // Update auth context with user data
+      setUser(data.user);
+      
       setSuccess("Account created! Redirecting...");
       setTimeout(() => {
         window.location.href = "/portfolio";

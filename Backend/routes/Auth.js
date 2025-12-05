@@ -2,20 +2,13 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import sql from '../db.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
   try {
-    // Check if JWT_SECRET is configured
-    if (!process.env.JWT_SECRET) {
-      console.error('ERROR: JWT_SECRET is not set in environment variables!');
-      return res.status(500).json({ 
-        error: 'Server configuration error. Please contact support.' 
-      });
-    }
-
     // Log received data for debugging
     console.log('Registration request received:', {
       body: req.body,
@@ -76,16 +69,16 @@ router.post('/register', async (req, res) => {
     const saltRounds = 12;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // Create user
+    // Create user with default role 'free'
     const [user] = await sql`
-      INSERT INTO users (email, password_hash, display_name)
-      VALUES (${email}, ${passwordHash}, ${displayName})
-      RETURNING id, email, display_name, created_at
+      INSERT INTO users (email, password_hash, display_name, role)
+      VALUES (${email}, ${passwordHash}, ${displayName}, 'free')
+      RETURNING id, email, display_name, role, created_at
     `;
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -103,7 +96,8 @@ router.post('/register', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        displayName: user.display_name
+        displayName: user.display_name,
+        role: user.role
       }
     });
 
@@ -126,14 +120,6 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    // Check if JWT_SECRET is configured
-    if (!process.env.JWT_SECRET) {
-      console.error('ERROR: JWT_SECRET is not set in environment variables!');
-      return res.status(500).json({ 
-        error: 'Server configuration error. Please contact support.' 
-      });
-    }
-
     const { email, password } = req.body;
 
     // Look up user
@@ -153,7 +139,7 @@ router.post('/login', async (req, res) => {
 
     // Create JWT
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, role: user.role || 'free' },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -171,7 +157,8 @@ router.post('/login', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        displayName: user.display_name
+        displayName: user.display_name,
+        role: user.role || 'free'
       }
     });
 
@@ -188,6 +175,34 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ 
       error: error.message || 'Internal server error' 
     });
+  }
+});
+
+// Get current user profile
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const [user] = await sql`
+      SELECT id, email, display_name, role, created_at 
+      FROM users 
+      WHERE id = ${req.user.userId}
+    `;
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.display_name,
+        role: user.role || 'free',
+        createdAt: user.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

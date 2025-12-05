@@ -8,27 +8,10 @@ import portfolioRoutes from './routes/portfolio.js';
 import investmentRoutes from './routes/investments.js';
 import assetRoutes from './routes/assets.js';
 import marketRoutes from './routes/market.js';
+import chatbotRoutes from './routes/chatbot.js';
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
-
-// Validate required environment variables
-if (!process.env.JWT_SECRET) {
-  console.error('ERROR: JWT_SECRET is not set in environment variables!');
-  console.error('Please add JWT_SECRET to your .env file in the backend directory');
-  console.error('You can generate a secret with: openssl rand -base64 32');
-  process.exit(1);
-}
-
-// Check for market data API keys
-if (!process.env.FINNHUB_API && !process.env.ALPHA_VANTAGE_API) {
-  console.warn('No market data API key configured!');
-  console.warn('Add FINNHUB_API (recommended) or ALPHA_VANTAGE_API to your .env file');
-  console.warn('Finnhub: https://finnhub.io/ (60 calls/min free)');
-  console.warn('   Alpha Vantage: https://www.alphavantage.co/support/#api-key (25 calls/day free)');
-} else {
-  console.log('Alpha Vantage API key found in environment');
-}
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -51,6 +34,7 @@ app.use('/api/portfolios', portfolioRoutes);
 app.use('/api/investments', investmentRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/market', marketRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -158,14 +158,12 @@ const Portfolio = () => {
 
   useEffect(() => {
     fetchPortfolios();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (holdings.length > 0) {
       fetchMarketData(holdings);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [holdings]);
 
   const totalLineData = useMemo(() => {

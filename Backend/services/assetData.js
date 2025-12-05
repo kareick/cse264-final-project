@@ -88,7 +88,6 @@ class AssetDataService {
     } catch (error) {
       // If API fails (rate limit, etc.), generate mock data for development
       if (error.message.includes('rate limit') || error.message.includes('25 requests')) {
-        console.warn(`Alpha Vantage rate limit hit for ${symbol}. Using mock data for development.`);
         return this.generateMockHistory(symbol, outputsize);
       }
       throw error;

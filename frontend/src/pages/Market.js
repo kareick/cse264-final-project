@@ -213,7 +213,6 @@ const Market = () => {
                 className="px-4 py-3 rounded-xl border border-black/20 bg-white text-black focus:border-black focus:outline-none"
               >
                 <option value="compact">Last 100 Days</option>
-                <option value="full">Full History</option>
               </select>
             </form>
 
@@ -341,7 +340,7 @@ const Market = () => {
                       }}
                       className="text-red-500 hover:text-red-700"
                     >
-                      ×
+                      x
                     </button>
                   </div>
                 ))}
